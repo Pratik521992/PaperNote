@@ -1,0 +1,25 @@
+{
+  "name": "fullstack",
+  "version": "1.0.0",
+  "description": "reactnnodenmongo",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "server": "nodemon server.js",
+    "client": "cd PaperNote && npm start",
+    "dev": "concurrently \"npm run server\" \" npm run client\""
+  },
+  "author": "PRATIK",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "concurrently": "^4.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "mongodb": "^3.1.7",
+    "mongoose": "^5.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.9"
+  }
+}
