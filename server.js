@@ -1,14 +1,19 @@
 const express = require('express');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 const  mongodb = require('mongodb');
 const objectId  = require('mongodb').ObjectId;
 const bodyparser = require('body-parser');
+const passport  = require('passport');
 const app = express();
-const port = 5004;
+const port = 5002;
 const cors = require('cors');
 
 app.use(bodyparser.json()); 
 app.use(cors());
+app.use(passport.initialize());
+app.use(passport.session());
+
+//require('./passport')(passport);
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -30,21 +35,41 @@ app.get('/api/db' , async(req, res) => {
 
   const entries = await loadData();
   res.send(await entries.find({}).toArray()); 
-})
-app.post('/api/loginSecure', verifyToken, (req, res) => {
+});
 
-  jwt.verify(req.token, 'shhhh', (err, authData) => {
-    if(err) {
-     
-      res.sendStatus(403);
+app.post('/api/login', (req, res)=>{
+    
+  //real data
+    const realuser = req.body;
+    console.log(realuser)
+  //mock user
+  const user ={
+    user: 'Pratik',
+    pass: 'Nini'
+  }
+  
+  jwt.sign({realuser}, 'shhhh' ,(err, token) => {
+    if(err) console.log(err);
+
+    res.json({token});
+    
+  })
+  
+})
+
+app.get('/api/post', verfiyToken, (req, res)=>{
+ 
+  jwt.verify(req.token, 'shhhh', (err, authData)=>{
+    if(err){ console.log('jwt error'+err); res.sendStatus(403);
     }
-    else {
+    else{
       res.send({
         authData
       })
     }
-  }) 
-}) 
+  })
+})
+
 
 app.post('/api/db/post', async(req, res) =>{
   console.log(req.body.id)
@@ -78,35 +103,22 @@ app.delete('/api/db/del/:id', async(req, res) => {
   res.status(200).send();
 })
 
-app.post('/api/db/login', (req, res)=>{
-  //mock user
-  const user = {
-    id:1,
-    user: 'Pratik',
-    pass: 'Nini'
-  }
-
-  jwt.sign({user}, 'shhhh' ,(err, token)=>{
-      res.json({token})
-  })
-
-
+function verfiyToken(req, res, next){
+ 
   
-})
-
-function verifyToken(req, res, next){
-
   const bearerHeader = req.headers['authorization'];
+ 
   if(typeof bearerHeader !== 'undefined'){
-    const bearer = bearerHeader.split(' ');
-    const bearerToken = bearer[1];
-    req.token = bearerToken;
-    console.log(bearer)
-    next();
-
-  }else{
+      const bearer  = bearerHeader.split(' ');
+      const bearertoken = bearer[1];
+      req.token = bearertoken;
+    
+      next();
+  }
+  else {
     res.sendStatus(403);
   }
+
 }
 
 app.listen(port, () => console.log(`server started at ${port}`) )
