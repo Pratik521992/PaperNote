@@ -1,12 +1,13 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const  mongodb = require('mongodb');
+const mongodb = require('mongodb');
 const objectId  = require('mongodb').ObjectId;
 const bodyparser = require('body-parser');
 const passport  = require('passport');
 const app = express();
-const port = 5002;
+const port = 5000;
 const cors = require('cors');
+const mongoose = require('mongoose');
 
 app.use(bodyparser.json()); 
 app.use(cors());
@@ -20,6 +21,7 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
+
 
 async function loadData(){
 
@@ -36,6 +38,7 @@ app.get('/api/db', async(req, res) => {
   res.send(await entries.find({}).toArray()); 
 });
 
+//get users from UI///////
 app.post('/api/login', (req, res)=>{
 
   //real data
@@ -46,14 +49,23 @@ app.post('/api/login', (req, res)=>{
     user: 'Pratik',
     pass: 'Nini'
   }
+  if((realuser.user===user.user)&&(realuser.pass===user.pass)){
   jwt.sign({realuser}, 'shhhh' ,(err, token) => {
-    if(err) console.log(err)
-    res.json({token});
-    
+    if(err){ 
+      console.log(err);
+    }
+    else{
+     
+    res.json({
+      token,
+      realuser
+    });
+  }
   })
+  }
 })
 
-app.get('/api/post', verfiyToken, (req, res)=>{
+app.post('/api/post', verfiyToken, (req, res)=>{
   console.log('getting user...')
   jwt.verify(req.token, 'shhhh', (err, authData)=>{
     if(err){ console.log(err); res.send(403);
@@ -61,12 +73,12 @@ app.get('/api/post', verfiyToken, (req, res)=>{
     else{
       res.send({
         authData
-      })
+      }) 
     }
   })
 })
 
-app.post('/api/db/post', async(req, res) =>{
+app.post('/api/db/post', verfiyToken ,async(req, res) =>{
   console.log(req.body.id)
   const entries = await loadData();
   await entries.insertOne({
@@ -99,7 +111,7 @@ app.delete('/api/db/del/:id', async(req, res) => {
 })
 
 function verfiyToken(req, res, next){
- 
+  console.log('here')
   const bearerHeader = req.headers['authorization'];
  
   if(typeof bearerHeader !== 'undefined'){
