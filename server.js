@@ -52,7 +52,7 @@ app.post('/api/login', (req, res)=>{
   if((realuser.user===user.user)&&(realuser.pass===user.pass)){
   jwt.sign({realuser}, 'shhhh' ,(err, token) => {
     if(err){ 
-      console.log(err);
+      
     }
     else{
      
@@ -62,6 +62,9 @@ app.post('/api/login', (req, res)=>{
     });
   }
   })
+  }
+  else{
+    res.json({token:'not authenticated'})
   }
 })
 
@@ -90,7 +93,7 @@ app.post('/api/db/post', verfiyToken ,async(req, res) =>{
   });
   res.status(201).send();
 })
-app.post('/api/db/put', async(req, res) =>{
+app.post('/api/db/put', verfiyToken ,async(req, res) =>{
   console.log(req.body._id)
   const entries = await loadData();
   await entries.updateOne({_id: objectId(req.body._id)},{$set :{
