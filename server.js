@@ -33,17 +33,18 @@ async function loadData(){
   return client.db('papernote_main').collection('entries');
 }
 
-app.get('/api/db', async(req, res) => {
+app.get('/api/db' , async(req, res) => {
+
   const entries = await loadData();
   res.send(await entries.find({}).toArray()); 
 });
 
 //get users from UI///////
 app.post('/api/login', (req, res)=>{
-
+    
   //real data
     const realuser = req.body;
-    
+    console.log(realuser)
   //mock user
   const user ={
     user: 'Pratik',
@@ -64,14 +65,14 @@ app.post('/api/login', (req, res)=>{
   })
   }
   else{
-    res.json({token:'not authenticated'})
+    res.json({error:'not authenticated'})
   }
 })
 
 app.post('/api/post', verfiyToken, (req, res)=>{
   console.log('getting user...')
   jwt.verify(req.token, 'shhhh', (err, authData)=>{
-    if(err){ console.log(err); res.send(403);
+    if(err){ console.log('jwt error'+err); res.sendStatus(403);
     }
     else{
       res.send({
@@ -93,7 +94,7 @@ app.post('/api/db/post', verfiyToken ,async(req, res) =>{
   });
   res.status(201).send();
 })
-app.post('/api/db/put', verfiyToken ,async(req, res) =>{
+app.post('/api/db/put', async(req, res) =>{
   console.log(req.body._id)
   const entries = await loadData();
   await entries.updateOne({_id: objectId(req.body._id)},{$set :{
@@ -116,7 +117,7 @@ app.delete('/api/db/del/:id', async(req, res) => {
 function verfiyToken(req, res, next){
   console.log('here')
   const bearerHeader = req.headers['authorization'];
- 
+ console.log(bearerHeader)
   if(typeof bearerHeader !== 'undefined'){
       const bearer  = bearerHeader.split(' ');
       const bearertoken = bearer[1];
