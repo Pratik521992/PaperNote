@@ -64,6 +64,11 @@ app.post('/api/login', (req, res)=>{
   }
   })
   }
+  else{
+    res.json({
+      error: 'not authencated'
+    })
+  }
 })
 
 app.post('/api/post', verfiyToken, (req, res)=>{
